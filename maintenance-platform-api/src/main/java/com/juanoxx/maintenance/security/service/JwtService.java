@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -31,15 +32,18 @@ public class JwtService {
     public String generateAccessToken(AuthenticatedUser user) {
         Instant now = Instant.now();
         Instant expiration = now.plus(jwtProperties.getAccessTokenExpirationMinutes(), ChronoUnit.MINUTES);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(ROLE_CLAIM, user.getRole().name());
+        claims.put(USER_ID_CLAIM, user.getId());
+        if (user.getBuildingId() != null) {
+            claims.put(BUILDING_ID_CLAIM, user.getBuildingId());
+        }
+
         return Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
-                .claims(Map.of(
-                        ROLE_CLAIM, user.getRole().name(),
-                        USER_ID_CLAIM, user.getId(),
-                        BUILDING_ID_CLAIM, user.getBuildingId()
-                ))
+                .claims(claims)
                 .signWith(secretKey)
                 .compact();
     }
