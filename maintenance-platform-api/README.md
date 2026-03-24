@@ -63,3 +63,53 @@ Revisa `.env.example`:
 ./mvnw -DskipTests package
 docker compose down -v
 ```
+
+## Endpoints principales
+
+Auth
+
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+
+Incidencias
+
+- `GET /incidents` (con filtros opcionales)
+- `GET /incidents/{id}`
+- `POST /incidents`
+- `PATCH /incidents/{id}/assign`
+- `PATCH /incidents/{id}/status`
+- `PATCH /incidents/{id}/priority` (admin)
+- `GET /incidents/{id}/comments`
+- `POST /incidents/{id}/comments`
+- `GET /incidents/{id}/attachments`
+- `POST /incidents/{id}/attachments`
+- `GET /incidents/{id}/history`
+
+Reportes
+
+- `GET /reports/incidents.csv` (con filtros opcionales)
+
+Dashboard
+
+- `GET /dashboard/admin`
+- `GET /dashboard/technician`
+- `GET /dashboard/resident`
+
+## Filtros disponibles en incidencias y CSV
+
+Parámetros opcionales:
+
+- `buildingId`
+- `status` (`PENDIENTE`, `ASIGNADA`, `EN_PROCESO`, `RESUELTA`, `CERRADA`, `REABIERTA`, `CANCELADA`)
+- `priority` (`BAJA`, `MEDIA`, `ALTA`, `CRITICA`)
+- `category` (`ELECTRICIDAD`, `GASFITERIA`, `SEGURIDAD`, `LIMPIEZA`, `ASCENSOR`, `RUIDO`, `OTRO`)
+- `createdFrom` (`yyyy-MM-dd`)
+- `createdTo` (`yyyy-MM-dd`)
+- `technicianId`
+- `overdue` (`true`/`false`)
+
+Ejemplo:
+
+`GET /api/v1/incidents?buildingId=1&status=PENDIENTE&createdFrom=2026-03-01&createdTo=2026-03-31`
