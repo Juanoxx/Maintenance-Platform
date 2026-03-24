@@ -18,6 +18,8 @@ import com.juanoxx.maintenance.user.entity.User;
 import com.juanoxx.maintenance.user.entity.UserRole;
 import com.juanoxx.maintenance.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -324,5 +326,36 @@ public class IncidentService {
                 comment.getMessage(),
                 comment.getCreatedAt()
         );
+    }
+
+    private AttachmentResponse toAttachmentResponse(Attachment attachment) {
+        return new AttachmentResponse(
+                attachment.getId(),
+                attachment.getOriginalName(),
+                attachment.getStoragePath(),
+                attachment.getMimeType(),
+                attachment.getSizeBytes(),
+                attachment.getCreatedAt()
+        );
+    }
+
+    private IncidentStatusHistoryResponse toStatusHistoryResponse(IncidentStatusHistory history) {
+        return new IncidentStatusHistoryResponse(
+                history.getId(),
+                history.getFromStatus(),
+                history.getToStatus(),
+                history.getChangedBy().getId(),
+                history.getReason(),
+                history.getCreatedAt()
+        );
+    }
+
+    private void validateDateRange(IncidentSearchCriteria criteria) {
+        if (criteria == null || criteria.createdFrom() == null || criteria.createdTo() == null) {
+            return;
+        }
+        if (criteria.createdFrom().isAfter(criteria.createdTo())) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "createdFrom cannot be after createdTo");
+        }
     }
 }
