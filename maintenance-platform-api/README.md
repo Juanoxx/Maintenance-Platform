@@ -14,19 +14,27 @@ Backend Spring Boot para el sistema de gestion de mantenciones de edificios.
 
 ## Ejecutar local
 
-1. Levantar PostgreSQL:
+1. Crear archivo `.env` desde `.env.example`.
+
+2. Levantar PostgreSQL:
 
 ```bash
 docker compose up -d
 ```
 
-2. Ejecutar backend:
+3. Ejecutar backend:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-3. Accesos:
+En Windows PowerShell:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+4. Accesos:
 
 - API base: `http://localhost:8090/api/v1`
 - Health: `http://localhost:8090/api/v1/actuator/health`
