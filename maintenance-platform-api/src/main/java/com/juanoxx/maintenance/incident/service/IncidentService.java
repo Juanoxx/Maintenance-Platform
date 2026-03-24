@@ -52,18 +52,12 @@ public class IncidentService {
     );
 
     @Transactional(readOnly = true)
-    public List<IncidentResponse> listIncidents() {
+    public List<IncidentResponse> listIncidents(IncidentSearchCriteria criteria) {
+        validateDateRange(criteria);
         AuthenticatedUser principal = SecurityUtils.currentUser();
-        List<Incident> incidents;
-        if (principal.getRole() == UserRole.ADMIN) {
-            incidents = incidentRepository.findAll();
-        } else if (principal.getRole() == UserRole.TECHNICIAN) {
-            User technician = getRequiredUser(principal.getId());
-            incidents = incidentRepository.findByTechnicianOrderByCreatedAtDesc(technician);
-        } else {
-            User resident = getRequiredUser(principal.getId());
-            incidents = incidentRepository.findByResidentOrderByCreatedAtDesc(resident);
-        }
+        Specification<Incident> spec = IncidentSpecifications.visibleTo(principal)
+                .and(IncidentSpecifications.byCriteria(criteria));
+        List<Incident> incidents = incidentRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
         return incidents.stream().map(this::toResponse).toList();
     }
 

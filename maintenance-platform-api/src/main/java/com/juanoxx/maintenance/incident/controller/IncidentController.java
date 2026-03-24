@@ -1,14 +1,19 @@
 package com.juanoxx.maintenance.incident.controller;
 
 import com.juanoxx.maintenance.incident.dto.*;
+import com.juanoxx.maintenance.incident.entity.IncidentCategory;
+import com.juanoxx.maintenance.incident.entity.IncidentPriority;
+import com.juanoxx.maintenance.incident.entity.IncidentStatus;
 import com.juanoxx.maintenance.incident.service.IncidentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -20,8 +25,28 @@ public class IncidentController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','RESIDENT','TECHNICIAN')")
-    public List<IncidentResponse> listIncidents() {
-        return incidentService.listIncidents();
+    public List<IncidentResponse> listIncidents(
+            @RequestParam(required = false) Long buildingId,
+            @RequestParam(required = false) IncidentStatus status,
+            @RequestParam(required = false) IncidentPriority priority,
+            @RequestParam(required = false) IncidentCategory category,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdTo,
+            @RequestParam(required = false) Long technicianId,
+            @RequestParam(required = false) Boolean overdue
+    ) {
+        return incidentService.listIncidents(
+                new IncidentSearchCriteria(
+                        buildingId,
+                        status,
+                        priority,
+                        category,
+                        createdFrom,
+                        createdTo,
+                        technicianId,
+                        overdue
+                )
+        );
     }
 
     @GetMapping("/{id}")
