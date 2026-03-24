@@ -170,6 +170,15 @@ public class IncidentService {
         return toCommentResponse(comment);
     }
 
+    @Transactional(readOnly = true)
+    public List<IncidentCommentResponse> listComments(Long incidentId) {
+        Incident incident = getAccessibleIncident(incidentId, SecurityUtils.currentUser());
+        return incidentCommentRepository.findByIncidentIdOrderByCreatedAtAsc(incident.getId())
+                .stream()
+                .map(this::toCommentResponse)
+                .toList();
+    }
+
     @Transactional
     public AttachmentResponse uploadAttachment(Long incidentId, MultipartFile file) {
         Incident incident = getAccessibleIncident(incidentId, SecurityUtils.currentUser());
@@ -195,6 +204,52 @@ public class IncidentService {
                 saved.getSizeBytes(),
                 saved.getCreatedAt()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<AttachmentResponse> listAttachments(Long incidentId) {
+        Incident incident = getAccessibleIncident(incidentId, SecurityUtils.currentUser());
+        return attachmentRepository.findByIncidentIdOrderByCreatedAtAsc(incident.getId())
+                .stream()
+                .map(this::toAttachmentResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<IncidentStatusHistoryResponse> listStatusHistory(Long incidentId) {
+        Incident incident = getAccessibleIncident(incidentId, SecurityUtils.currentUser());
+        return statusHistoryRepository.findByIncidentIdOrderByCreatedAtAsc(incident.getId())
+                .stream()
+                .map(this::toStatusHistoryResponse)
+                .toList();
+    }
+
+    @Transactional
+    public IncidentResponse updatePriority(Long incidentId, IncidentPriorityUpdateRequest request) {
+        AuthenticatedUser principal = SecurityUtils.currentUser();
+        if (principal.getRole() != UserRole.ADMIN) {
+            throw new ForbiddenOperationException("Only admin can change priority");
+        }
+
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident not found"));
+
+        IncidentPriority currentPriority = incident.getPriority();
+        IncidentPriority targetPriority = request.priority();
+        if (currentPriority == targetPriority) {
+            return toResponse(incident);
+        }
+
+        incident.setPriority(targetPriority);
+        Incident updated = incidentRepository.save(incident);
+        User admin = getRequiredUser(principal.getId());
+        addComment(
+                updated,
+                admin,
+                CommentType.SYSTEM,
+                "Administrador cambio prioridad: " + currentPriority + " -> " + targetPriority
+        );
+        return toResponse(updated);
     }
 
     private void validateRoleCanChangeStatus(

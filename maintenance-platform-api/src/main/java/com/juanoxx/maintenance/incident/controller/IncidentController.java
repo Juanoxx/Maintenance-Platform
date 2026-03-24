@@ -81,10 +81,34 @@ public class IncidentController {
         return incidentService.addComment(id, request);
     }
 
+    @GetMapping("/{id}/comments")
+    @PreAuthorize("hasAnyRole('ADMIN','RESIDENT','TECHNICIAN')")
+    public List<IncidentCommentResponse> listComments(@PathVariable Long id) {
+        return incidentService.listComments(id);
+    }
+
     @PostMapping("/{id}/attachments")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN','RESIDENT','TECHNICIAN')")
     public AttachmentResponse uploadAttachment(@PathVariable Long id, @RequestPart("file") MultipartFile file) {
         return incidentService.uploadAttachment(id, file);
+    }
+
+    @GetMapping("/{id}/attachments")
+    @PreAuthorize("hasAnyRole('ADMIN','RESIDENT','TECHNICIAN')")
+    public List<AttachmentResponse> listAttachments(@PathVariable Long id) {
+        return incidentService.listAttachments(id);
+    }
+
+    @GetMapping("/{id}/history")
+    @PreAuthorize("hasAnyRole('ADMIN','RESIDENT','TECHNICIAN')")
+    public List<IncidentStatusHistoryResponse> listStatusHistory(@PathVariable Long id) {
+        return incidentService.listStatusHistory(id);
+    }
+
+    @PatchMapping("/{id}/priority")
+    @PreAuthorize("hasRole('ADMIN')")
+    public IncidentResponse updatePriority(@PathVariable Long id, @Valid @RequestBody IncidentPriorityUpdateRequest request) {
+        return incidentService.updatePriority(id, request);
     }
 }
