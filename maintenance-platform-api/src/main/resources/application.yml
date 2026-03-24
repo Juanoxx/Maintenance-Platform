@@ -1,0 +1,56 @@
+debug: false
+
+spring:
+  application:
+    name: maintenance-platform-api
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:maintenance_db}
+    username: ${DB_USER:maintenance_user}
+    password: ${DB_PASSWORD:maintenance_pass}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    time-zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+server:
+  port: ${SERVER_PORT:8090}
+  servlet:
+    context-path: /api/v1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /swagger
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:VGhpc0lzQVN0cm9uZ0RldmVsb3BtZW50U2VjcmV0S2V5VGhhdE11c3RCZUF0TGVhc3QzMkJ5dGVz}
+      access-token-expiration-minutes: ${JWT_ACCESS_EXP_MIN:30}
+      refresh-token-expiration-days: ${JWT_REFRESH_EXP_DAYS:14}
+  storage:
+    upload-dir: ${APP_UPLOAD_DIR:uploads}
